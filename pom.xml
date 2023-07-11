@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>idea_problem</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <xerces.version>2.12.1</xerces.version>
+        <jaxb.commons.version>0.6.4</jaxb.commons.version>
+        <aspectj.version>1.9.7</aspectj.version>
+
+        <plugin.aspectj.skip>true</plugin.aspectj.skip>
+        <plugin.aspject.skip.testcompile>${plugin.aspectj.skip}</plugin.aspject.skip.testcompile>
+
+    </properties>
+
+    <modules>
+        <module>generate</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jvnet.jaxb2.maven2</groupId>
+                    <artifactId>maven-jaxb22-plugin</artifactId>
+                    <!-- Version Must be < 0.14.0 otherwise api compatibility errors will occur. -->
+                    <version>0.13.3</version>
+
+                    <dependencies>
+                        <!-- Wir brauchen hier eine XML Parser, der vom JAVA_HOME wird beim Multi Module Build nicht geladen -->
+                        <dependency>
+                            <groupId>xerces</groupId>
+                            <artifactId>xercesImpl</artifactId>
+                            <version>${xerces.version}</version>
+                        </dependency>
+                    </dependencies>
+
+
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>javacc-maven-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>aspectj-maven-plugin</artifactId>
+                    <version>1.14.0</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjrt</artifactId>
+                            <version>${aspectj.version}</version>
+                            <scope>compile</scope>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.aspectj</groupId>
+                            <artifactId>aspectjtools</artifactId>
+                            <version>${aspectj.version}</version>
+                            <scope>compile</scope>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <showWeaveInfo>false</showWeaveInfo>
+                        <forceAjcCompile>true</forceAjcCompile>
+                        <Xlint>ignore</Xlint>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <complianceLevel>1.8</complianceLevel>
+                        <proceedOnError>false</proceedOnError>
+                        <verbose>false</verbose>
+                    </configuration>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+
+    </build>
+
+    <profiles>
+
+        <profile>
+            <!--
+            Mit den Upgrade von aspectj-maven-plugin konnte STD_Project nicht mehr gebaut werden.
+            Das aspectj-maven-plugin wurde auch im STD_Project ausgeführt und ist gescheitert, weil keine *.java Dateien vorhanden sind.
+            Wir habe nun die Definition des aspectj-maven-plugin in das Profile WithAspectJ ausgelagert.
+            Es wird nur aktiv, wenn wir nicht in STD_Project sind (wird anhand der Datei InStdProject.txt erkannt).
+
+            Die Properties plugin.aspectj.skip und plugin.aspject.skip.testcompile werden weiterhin beachtet.
+            -->
+            <id>WithAspectJ</id>
+            <activation>
+                <file>
+                    <missing>InStdProject.txt</missing>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>aspectj-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>${plugin.aspectj.skip}</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>ajc-compile</id>
+                                <goals>
+                                    <goal>compile</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>
+                                            <basedir>${project.basedir}/src/main/java</basedir>
+                                            <includes>
+                                                <include>**/*.java</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>**/CVS/**/*</exclude>
+                                            </excludes>
+                                        </source>
+                                    </sources>
+                                    <!-- D0000_999-4481: Wir führen Aspectj nur im Nachgang aus. Annotation-Processing wird vom maven-compiler-plugin gemacht. -->
+                                    <proc>none</proc>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>ajc-test-compile</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>test-compile</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>${plugin.aspject.skip.testcompile}</skip>
+                                    <proc>none</proc>
+                                    <sources>
+                                        <source>
+                                            <basedir>${project.basedir}/src/test/java</basedir>
+                                            <includes>
+                                                <include>**/*.java</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>**/CVS/**/*</exclude>
+                                            </excludes>
+                                        </source>
+                                    </sources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jvnet.jaxb2_commons</groupId>
+                <artifactId>jaxb2-basics-runtime</artifactId>
+                <version>${jaxb.commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${aspectj.version}</version>
+            </dependency>
+
+        </dependencies>
+
+    </dependencyManagement>
+
+</project>

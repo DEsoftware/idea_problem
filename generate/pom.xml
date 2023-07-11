@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>generate</artifactId>
+
+    <parent>
+        <groupId>org.example</groupId>
+        <artifactId>idea_problem</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <plugin.aspectj.skip>false</plugin.aspectj.skip>
+    </properties>
+
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/generated-sources/xjc</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/generated-sources/annotation</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb22-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>xjc</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <specVersion>2.2</specVersion>
+                    <schemas>
+                        <schema>
+                            <fileset>
+                                <directory>${project.basedir}/xsd</directory>
+                                <includes>
+                                    <include>TestDEXMLServiceA.xsd</include>
+                                </includes>
+                            </fileset>
+                        </schema>
+                    </schemas>
+                    <bindingDirectory>${project.basedir}/src/main/xjb</bindingDirectory>
+                    <generateDirectory>${project.build.directory}/generated-sources/xjc</generateDirectory>
+                    <removeOldOutput>true</removeOldOutput>
+                    <forceRegenerate>false</forceRegenerate>
+                    <args>
+                        <arg>-XtoString</arg>
+                        <arg>-Xcopyable</arg>
+                        <arg>-Xequals</arg>
+                    </args>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.jvnet.jaxb2_commons</groupId>
+                            <artifactId>jaxb2-basics</artifactId>
+                            <version>${jaxb.commons.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <generatedSourcesDirectory>${project.build.directory}/generated-sources/annotation</generatedSourcesDirectory>
+                    <staleMillis>1</staleMillis>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>apt-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <proc>only</proc>
+                            <compilerArgs>
+                                <arg>-Xmaxerrs</arg>
+                                <arg>1000</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <proc>none</proc>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics-runtime</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+
+
+    </dependencies>
+</project>

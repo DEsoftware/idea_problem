@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2005 rel. 3 U (http://www.altova.com) by Jeannette Hannuschka-Stein (DE software & control GmbH) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:jxb="http://java.sun.com/xml/ns/jaxb" xmlns="http://www.de-gmbh.com/TestXmlServiceAConfig" targetNamespace="http://www.de-gmbh.com/TestXmlServiceAConfig" elementFormDefault="qualified" jxb:version="2.0">
+
+	<xs:annotation>
+		<xs:appinfo>
+			<jxb:schemaBindings>
+				<jxb:package name="com.desoft._0000_999.servicesFeatureTest.xmlA.types" />
+			</jxb:schemaBindings>
+		</xs:appinfo>
+	</xs:annotation>
+
+	<xs:element name="TestXmlServiceAConfig">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="TTestXmlServiceAConfig"/>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="TTestXmlServiceAConfig">
+		<xs:sequence>
+			<xs:element name="service" type="TTestXmlServiceA" maxOccurs="unbounded" />
+		</xs:sequence>
+		<!-- editable is deprected: Zukuenftig hat jede einzelne Konfig einen editable Wert. Nur wenn diese nicht gesetzt ist wird der übergeordnete verwendet. -->
+		<xs:attribute name="editable" type="xs:boolean" use="optional" default="false"/>
+	</xs:complexType>
+	<xs:complexType name="TTestXmlServiceA">
+		<xs:sequence>
+			<xs:element name="property" type="TTestAProperty" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>Zusatzwerte die je nach Datenbank abweichen können</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="editable" type="xs:boolean" use="optional"/>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+	</xs:complexType>
+	<xs:complexType name="TTestAProperty">
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="value" type="xs:string" use="required"/>
+	</xs:complexType>
+</xs:schema>
